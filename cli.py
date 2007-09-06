@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__revision__ = "20070904"
+__revision__ = "20070906"
 
 import sys
 import briscola
@@ -142,4 +142,7 @@ if __name__ == "__main__":
                 CliPlayer(name='subzero', ishuman=False) ]
 
     game = CliGame(players)
-    game.mainloop()
+    try:
+        game.mainloop()
+    except KeyboardInterrupt:
+        print "\nExiting"
