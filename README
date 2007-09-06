@@ -1,0 +1,6 @@
+How to run pryscola
+-------------------
+cli environment: python cli.py
+
+gui environment: python gui.py
+

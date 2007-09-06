@@ -1,0 +1,10 @@
+README
+------
+
+This directory cointains card themes for Pryscola. 
+To create your own theme you just need to make a copy of the default theme
+directory and provide alternative images.
+
+- default theme -
+Images in the default theme are released under the terms of the GNU General
+Public License. See http://www.waste.org/~oxymoron/cards/ for more information.
