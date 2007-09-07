@@ -24,9 +24,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__revision__ = "20070906"
+__revision__ = "20070907"
 
-from random import Random
+from random import Random, sample
 
 seeds = ( 'CUORI', 'QUADRI', 'PICCHE', 'FIORI' )
 cardsnames = [ 'DUE', 'QUATTRO', 'CINQUE', 'SEI', 'SETTE', 
@@ -130,13 +130,18 @@ class MazzoAcinque(Deck):
         pass
 
 class Game:
+    
+    nonhumans = ( 'Kano', 'Sub-Zero', 'Scorpion', 'Sonya' )
 
-    def __init__(self, players):
+    def __init__(self, players=None):
         """
         deck, players
         """
         
-        self.players = players
+        if players:
+            self.players = players
+        else:
+            self.getplayers()
 
         if len(self.players) < 5:
             self.deck = Deck()
@@ -150,6 +155,13 @@ class Game:
         self.givecards()
 
         self.deck.setbriscola()
+
+    def getplayers(self):
+        """Set self.players"""
+        pass
+
+    def randomplayernames(self, n):
+        return sample(self.nonhumans, n)
     
     def givecards(self):
 

@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__revision__ = "20070906"
+__revision__ = "20070907"
 
 import sys
 import briscola
@@ -58,6 +58,28 @@ class CliPlayer(briscola.Player):
 
 class CliGame(briscola.Game):
     
+    def getplayers(self):
+
+        nplayers = -1
+        while nplayers not in ('2\n', '3\n', '4\n'):
+            print "How many players? (min 2, max 4)"
+            sys.stdout.write("> ")
+            nplayers = sys.stdin.readline()
+        
+        nplayers = int(nplayers.replace('\n', '')) - 1
+
+        print "Please enter your name"
+        sys.stdout.write("> ")
+        username = sys.stdin.readline().replace('\n', '')
+
+        self.players = [ CliPlayer(name=username, team='a') ]
+        
+        others = self.randomplayernames(nplayers)
+
+        for idx, name in enumerate(others):
+            self.players.append(CliPlayer(name, ishuman=False,
+                team=idx % 2 and 'a' or 'b'))
+
     def showplayedcard(self, idxplayer, idxcard):
         print self.players[idxplayer].name, "plays", \
             showcard(self.players[idxplayer].hand[idxcard])
@@ -104,7 +126,7 @@ class CliGame(briscola.Game):
             self.resetplayed()
 
             for idxplayer, player in enumerate(self.players):
-                player.showname()
+                #player.showname()
                 player.showhand()
 
                 idxcarta = player.getchoice(self.cardsplayed, 
@@ -139,13 +161,7 @@ if __name__ == "__main__":
 
     print """pryscola v%s""" % __revision__
 
-    print "Please enter the user name"
-    username = sys.stdin.readline()
-
-    players = [ CliPlayer(name=username), 
-                CliPlayer(name='subzero', ishuman=False) ]
-
-    game = CliGame(players)
+    game = CliGame()
     try:
         game.mainloop()
     except KeyboardInterrupt:
