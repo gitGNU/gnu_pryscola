@@ -28,15 +28,12 @@ import sys
 import pygame
 from pygame.locals import *
 
-from briscola import Card as BaseCard
-from briscola import Deck as BaseDeck
-from briscola import Game as BaseGame
-from briscola import Player as BasePlayer
+import briscola
 
-class Card(BaseCard):
+class Card(briscola.Card):
     
     def __init__(self, seed, value, theme="default"):
-        BaseCard.__init__(self, seed, value)
+        briscola.Card.__init__(self, seed, value)
         filename = os.path.join(".", "cards", theme, 
             "%s_%s.gif" % (value.lower(), seed.lower()))
 
@@ -45,7 +42,28 @@ class Card(BaseCard):
         filename = os.path.join(".", "cards", theme, "back.gif")
         self.backimage = pygame.image.load(filename).convert()
 
-class Player(BasePlayer):
+class GuiPlayer(briscola.Player):
+
+    def showname(self, field):
+
+        field_rect = field.get_rect()
+
+        playername = self.name 
+        if self.team:
+            playername += " (team %s)" % self.team
+
+        myfnt = pygame.font.match_font('Arial')
+        font = pygame.font.Font(myfnt, 36)
+        text = font.render(playername, 1, (10, 10, 10))
+        text_rect = text.get_rect()
+
+        if self.ishuman:
+            text_rect.y = field_rect.bottom - 110    
+        else:
+            text_rect.y = field_rect.top + 20
+
+        text_rect.x = 20 # field.get_width() / 2
+        field.blit(text, text_rect)
 
     def showhand(self, field):
 
@@ -70,14 +88,14 @@ class Player(BasePlayer):
             #card.image = pygame.transform.rotate(card.image, 90)
             field.blit(image, card_rect)
 
-class Game(BaseGame):
+class GuiGame(briscola.Game):
 
     def __init__(self, players, size):
         """
         Set up graphics, build and display the field, put the cards on
         the field (briscola and deck).
         """
-        BaseGame.__init__(self, players)
+        briscola.Game.__init__(self, players)
 
         pygame.init()
         self.screen = pygame.display.set_mode(size)
@@ -86,17 +104,17 @@ class Game(BaseGame):
         field_rect = self.field.get_rect()
         
         # put the briscola on the field
-        briscola = Card(self.deck.briscola.seed,
-                        self.deck.briscola.value)
-        briscola_rect = briscola.image.get_rect()
-        briscola_rect.center = field_rect.center
-        briscola.image = pygame.transform.rotate(briscola.image, 90)
-        self.field.blit(briscola.image, briscola_rect)
+        curbriscola = Card(self.deck.briscola.seed,
+                           self.deck.briscola.value)
+        curbriscola_rect = curbriscola.image.get_rect()
+        curbriscola_rect.center = field_rect.center
+        curbriscola.image = pygame.transform.rotate(curbriscola.image, 90)
+        self.field.blit(curbriscola.image, curbriscola_rect)
         
-        # put the deck over the briscola
-        backimage = briscola.backimage
-        backimage_rect = briscola.backimage.get_rect()
-        backimage_rect.center = briscola_rect.center
+        # put the deck over the curbriscola
+        backimage = curbriscola.backimage
+        backimage_rect = curbriscola.backimage.get_rect()
+        backimage_rect.center = curbriscola_rect.center
         backimage_rect.x -= 15
         backimage_rect.y -= 10
         self.field.blit(backimage, backimage_rect)
@@ -122,13 +140,14 @@ class Game(BaseGame):
     def mainloop(self):
         """The main loop. Iterate until the user wants to quit. """
         
-        self.players[0].showhand(self.field)
-        self.players[1].showhand(self.field)
-
         while 1:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: 
                     sys.exit()
+
+            for idxplayer, player in enumerate(self.players):
+                player.showname(self.field)
+                player.showhand(self.field)
 
             self.screen.blit(self.field, (0, 0))
             pygame.display.flip()
@@ -137,8 +156,8 @@ class Game(BaseGame):
 if __name__ == "__main__":
     size = width, height = 640, 480
 
-    players = [ Player(name='ema' ), 
-                Player(name='subzero', ishuman=False) ]
+    players = [ GuiPlayer(name='ema' ), 
+                GuiPlayer(name='subzero', ishuman=False) ]
 
-    game = Game(players, size)
+    game = GuiGame(players, size)
     game.mainloop()
