@@ -222,7 +222,6 @@ class Player:
                 card.seed == briscola.seed):
                 return idx
         
-        print "I DO NOT KNOW WHAT TO DO!"
         return 0
 
     def getchoice(self, cardsplayed=None, briscola=None):

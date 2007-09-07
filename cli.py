@@ -37,8 +37,8 @@ class CliPlayer(briscola.Player):
 
     def showhand(self):
         if self.ishuman:
-            for card in self.hand:
-                print showcard(card)
+            for idx, card in enumerate(self.hand):
+                print "%s) %s" % (idx, showcard(card))
 
     def getchoice(self, cardsplayed=None, curbriscola=None):
         """Interactive implementation of getchoice()."""
@@ -95,9 +95,8 @@ class CliGame(briscola.Game):
             print "vince", teams[1]
         else:
             print "pareggio"
-
+    
     def mainloop(self):
-        print """pryscola v%s""" % __revision__
         
         print "\nBRISCOLA:", showcard(self.deck.briscola)
 
@@ -138,7 +137,12 @@ class CliGame(briscola.Game):
        
 if __name__ == "__main__":
 
-    players = [ CliPlayer(name='ema' ), 
+    print """pryscola v%s""" % __revision__
+
+    print "Please enter the user name"
+    username = sys.stdin.readline()
+
+    players = [ CliPlayer(name=username), 
                 CliPlayer(name='subzero', ishuman=False) ]
 
     game = CliGame(players)
