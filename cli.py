@@ -52,6 +52,7 @@ class CliPlayer(briscola.Player):
         cardidx = -1
         while cardidx not in [ '%s\n' % n for n in range(0,
          len(self.hand)) ]:
+            sys.stdout.write("> ")
             cardidx = sys.stdin.readline()
 
         return int(cardidx.replace('\n',''))
@@ -120,13 +121,15 @@ class CliGame(briscola.Game):
     
     def mainloop(self):
         
-        print "\nBRISCOLA:", showcard(self.deck.briscola)
+        if len(self.players) == 3:
+            print "Removed card:", showcard(self.deck.removedcard)
 
         while len(self.players[0].hand):
             self.resetplayed()
 
             for idxplayer, player in enumerate(self.players):
-                #player.showname()
+                print "\nBriscola:", showcard(self.deck.briscola)
+
                 player.showhand()
 
                 idxcarta = player.getchoice(self.cardsplayed, 

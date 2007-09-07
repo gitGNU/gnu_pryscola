@@ -98,9 +98,6 @@ class Deck:
         # shuffle cards
         rand = Random()
         rand.shuffle(self.cards)
-
-        # which seed is briscola?
-        self.setbriscola()
     
     def __str__(self):
         return "\n".join([ str(card) for card in self.cards ])
@@ -118,6 +115,16 @@ class Deck:
             return self.cards.pop()
         except IndexError:
             return None            
+
+    def removetwo(self):
+        """
+        Remove the first 'two' encountered.
+        Needed when nplayers == 3.
+        """
+        for idx, card in enumerate(self.cards):
+            if card.value == 'DUE':
+                self.removedcard = self.cards.pop(idx)
+                break
 
 class MazzoAcinque(Deck):
     def setbriscola(self):
@@ -142,15 +149,22 @@ class Game:
             self.players = players
         else:
             self.getplayers()
+        
+        nplayers = len(self.players)
+        
+        if nplayers > 6:
+            raise InvalidNumberOfPlayers, nplayers
 
-        if len(self.players) < 5:
+        if nplayers != 5:
             self.deck = Deck()
             self.ncards = 3
-        elif len(self.players) == 5:
+
+            if nplayers == 3:
+                self.deck.removetwo()
+        else:
+            # FIXME: to implement
             self.deck = MazzoAcinque()
             self.ncards = 8
-        else:
-            raise InvalidNumberOfPlayers, len(self.players)
 
         self.givecards()
 
