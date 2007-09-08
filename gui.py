@@ -91,7 +91,7 @@ class GuiPlayer(briscola.Player):
 
     def getchoice(self, cardsplayed=None, curbriscola=None, event=None):
         """Interactive implementation of getchoice(). event cointains a
-        MOUSBUTTONDOWN event."""
+        MOUSEBUTTONDOWN event."""
         
         ret = briscola.Player.getchoice(self, cardsplayed, curbriscola)
         
@@ -106,12 +106,13 @@ class GuiPlayer(briscola.Player):
 class GuiGame(briscola.Game):
 
     def __init__(self, players, size):
-        """
-        Set up graphics, build and display the field, put the cards on
-        the field (briscola and deck).
-        """
+        """Set up graphics, build and display the field, put the cards on
+        the field (briscola and deck)."""
+
         pygame.init()
         self.screen = pygame.display.set_mode(size)
+        pygame.display.set_caption("priscola v%s" % __revision__)
+                                    #, icontitle=None) 
 
         briscola.Game.__init__(self, players)
 
@@ -119,21 +120,21 @@ class GuiGame(briscola.Game):
         field_rect = self.field.get_rect()
         
         # put the briscola on the field
-        curbriscola = GuiCard(self.deck.briscola.seed,
-                              self.deck.briscola.value)
-        #self.deck.briscola = curbriscola
+        self.deck.briscola = GuiCard(self.deck.briscola.seed,
+                                     self.deck.briscola.value)
 
-        curbriscola_rect = curbriscola.image.get_rect()
-        curbriscola_rect.centery = field_rect.centery
-        curbriscola_rect.x += 50
+        self.deck.briscola.card_rect.centery = field_rect.centery
+        self.deck.briscola.card_rect.x += 50
 
-        curbriscola.image = pygame.transform.rotate(curbriscola.image, 90)
-        self.field.blit(curbriscola.image, curbriscola_rect)
+        self.deck.briscola.image = pygame.transform.rotate(
+            self.deck.briscola.image, 90
+        )
+        self.field.blit(self.deck.briscola.image, 
+                        self.deck.briscola.card_rect)
         
         # put the deck over the curbriscola
-        backimage = curbriscola.backimage
-        backimage_rect = curbriscola.backimage.get_rect()
-        backimage_rect.center = curbriscola_rect.center
+        backimage = self.deck.briscola.backimage
+        backimage_rect = self.deck.briscola.card_rect
         backimage_rect.x -= 15
         backimage_rect.y -= 10
         self.field.blit(backimage, backimage_rect)
