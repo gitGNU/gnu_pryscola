@@ -169,7 +169,11 @@ class Game:
 
         self.givecards()
         self.deck.setbriscola()
+
         self.cardsplayed = []
+
+        self.points = None
+        self.winnerplayer, self.winnerteam = None, None
 
     def getplayers(self):
         """Set self.players"""
@@ -185,6 +189,7 @@ class Game:
                 for idx in range(0, self.ncards) ]
     
     def playcard(self, idxplayer, idxcard):
+        """Add card identified by idxcard to cardsplayed."""
         self.cardsplayed.append(self.players[idxplayer].hand.pop(idxcard))
     
     def resetplayed(self):
@@ -195,8 +200,43 @@ class Game:
 
     def showplayedcard(self):
         pass
+    
+    def computeresults(self):
+        """Compute final results, setting winnerplayer (or winnerteam)
+        and points."""
+
+        self.points = {}
+
+        if len(self.players) < 4:
+            # no teams
+            self.players.sort()
+            for player in self.players:
+                self.points[player.name] = player.points
+            
+            if self.players[-1].points != self.players[-2].points:
+                # set winnerplayer only if someone actually won
+                self.winnerplayer = self.players[-1]
+            return
+
+        # teams
+        for player in self.players:
+            if not self.points.has_key(player.team):
+                self.points[player.team] = player.points
+            else:
+                self.points[player.team] += player.points
+
+        teams = self.points.keys()
+        if self.points[teams[0]] > self.points[teams[1]]:
+            self.winnerteam = teams[0]
+        elif self.points[teams[0]] < self.points[teams[1]]:
+            self.winnerteam = teams[1]
 
     def showresults(self):
+        """Each subclassing module needs to implement the proper way to
+        present final results. Here we just call computeresults()."""
+        self.computeresults()
+
+    def mainloop(self):
         pass
                    
 class InvalidNumberOfPlayers(Exception):

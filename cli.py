@@ -20,7 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__revision__ = "20070907"
+"""Pryscola, command line interface"""
+
+__revision__ = "20070908"
 
 import sys
 import briscola
@@ -92,32 +94,26 @@ class CliGame(briscola.Game):
         print "---"
 
     def showresults(self):
-        if len(self.players) < 4:
-            # no teams
-            self.players.sort()
-            for player in self.players:
-                print player.name, player.points
-            print "vince", self.players[-1].name
-            return
+        briscola.Game.showresults(self)
 
-        points = {}
+        print 
 
-        for player in self.players:
-            if not points.has_key(player.team):
-                points[player.team] = 0
-            else:
-                points[player.team] += player.points
+        for name, points in self.points.items():
+            print name + ':', points, 'points'
+
+        if not self.winnerplayer and not self.winnerteam:
+            print "draw"
         
-        teams = points.keys()
-        for team in teams:
-            print "Squadra", team, points[team], "punti"
+        if self.winnerplayer:
+            print self.winnerplayer.name, 'wins'
 
-        if points[teams[0]] > points[teams[1]]:
-            print "vince", teams[0]
-        elif points[teams[0]] < points[teams[1]]:
-            print "vince", teams[1]
-        else:
-            print "pareggio"
+        if self.winnerteam:
+            print "Team", self.winnerteam, 'wins.'
+            print "Players in team", self.winnerteam + ':'
+
+            for player in self.players:
+                if player.team == self.winnerteam:
+                    print player.name, player.points, 'points'
     
     def mainloop(self):
         
