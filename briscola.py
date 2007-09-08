@@ -1,9 +1,5 @@
 #!/usr/bin/python
 #
-# briscola - Module implementing the basic features of "Briscola",
-#            a trick-taking card game. 
-#            See http://en.wikipedia.org/wiki/Briscola
-#
 # Copyright (C) 2007 Emanuele Rocca <ema@linux.it>
 # Copyright (C) 2007 Davide Pellerano <cycl0psg@gmail.com>
 # Copyright (C) 2007 Alessandro Arcidiacono <spidermacg@gmail.com>
@@ -24,7 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__revision__ = "20070907"
+"""Basic features of briscola, an Italian trick-taking card game. 
+See http://en.wikipedia.org/wiki/Briscola."""
+
+__revision__ = "20070908"
 
 from random import Random, sample
 
@@ -35,10 +34,11 @@ cardsnames = [ 'DUE', 'QUATTRO', 'CINQUE', 'SEI', 'SETTE',
 cardspoints = { 'ASSO': 11, 'TRE': 10, 'RE': 4, 'DONNA': 3, 'JACK': 2 }        
 
 def handwinner(cardlist, briscola, first, second):
-    """
+    """handwinner(cardlist, briscola, first, second) -> winner_idx
+
     Given a list of played cards, a briscola, and the index of two
-    adjacent players, return which one is the winner.
-    """
+    adjacent players, return which index is the winner."""
+
     if len(cardlist) == 1:
         # if only one card has been played
         return first
@@ -58,25 +58,27 @@ def handwinner(cardlist, briscola, first, second):
 
 class Card:
     
-    def __init__(self, seed='', value=None):
+    def __init__(self, seed, value):
         self.seed = seed
         self.value = value   
         self.points = cardspoints.get(value, 0)
     
     def __cmp__(self, othercard):
-        if self.points > othercard.points:
-            return 1
-        if self.points == othercard.points:
-            return 0
-        return -1
+        return cmp(self.points, othercard.points)
+
+    def isbriscola(self, briscola):
+        """isbriscola(briscola) -> boolean
+        Return True if this card is briscola"""
+        return self.seed == briscola.seed
     
     def beats(self, othercard, briscola):
-        """If this card wins over othercard"""
+        """beats(othercard, briscola) -> boolean
+        Return True if this card wins over othercard"""
 
-        if self.seed == briscola.seed and othercard.seed != briscola.seed:
+        if self.isbriscola(briscola) and not othercard.isbriscola(briscola):
             return True
         
-        if self.seed != briscola.seed and othercard.seed == briscola.seed:
+        if not self.isbriscola(briscola) and othercard.isbriscola(briscola):
             return False
         
         if self.seed == othercard.seed:
@@ -89,6 +91,8 @@ class Deck:
 
     def __init__(self):
         self.briscola = None
+        # will be set only if nplayers == 3
+        self.removedcard = None
 
         self.cards = []
         for seed in seeds:
@@ -117,8 +121,7 @@ class Deck:
             return None            
 
     def removetwo(self):
-        """
-        Remove the first 'two' encountered.
+        """Remove the first 'two' encountered.
         Needed when nplayers == 3.
         """
         for idx, card in enumerate(self.cards):
@@ -141,9 +144,7 @@ class Game:
     nonhumans = ( 'Kano', 'Sub-Zero', 'Scorpion', 'Sonya' )
 
     def __init__(self, players=None):
-        """
-        deck, players
-        """
+        """If players is None, call getplayers()."""
         
         if players:
             self.players = players
@@ -167,23 +168,21 @@ class Game:
             self.ncards = 8
 
         self.givecards()
-
         self.deck.setbriscola()
+        self.cardsplayed = []
 
     def getplayers(self):
         """Set self.players"""
         pass
 
-    def randomplayernames(self, n):
-        return sample(self.nonhumans, n)
+    def randomplayernames(self, num):
+        return sample(self.nonhumans, num)
     
     def givecards(self):
 
         for player in self.players:
-            player.hand = []
-
-            for idx in range(0, self.ncards):
-                player.hand.append(self.deck.cards.pop())
+            player.hand = [ self.deck.cards.pop() 
+                for idx in range(0, self.ncards) ]
     
     def playcard(self, idxplayer, idxcard):
         self.cardsplayed.append(self.players[idxplayer].hand.pop(idxcard))
@@ -202,10 +201,11 @@ class Game:
                    
 class InvalidNumberOfPlayers(Exception):
     def __init__(self, nplayers=0):
+        Exception.__init__(self)
         self.nplayers = nplayers
 
     def __str__(self):
-        return "Invalid number of players: " + nplayers
+        return "Invalid number of players: " + self.nplayers
 
 class Player:
     
@@ -217,13 +217,7 @@ class Player:
         self.team = team
 
     def __cmp__(self, player2):
-        if self.points > player2.points:
-            return 1
-
-        if self.points == player2.points:
-            return 0
-
-        return -1
+        return cmp(self.points, player2.points)
     
     def showname(self):
         pass
@@ -232,12 +226,11 @@ class Player:
         pass
     
     def aiplaycard(self, cardsplayed, briscola):
+        """aiplaycard(cardsplayed, briscola) -> cardidx
+        AI choice on the "best" card to play."""
+
         self.hand.sort()
         winnercard = cardsplayed[handwinner(cardsplayed, briscola, 0, 1)]
-        #except IndexError:
-            # no cards has been played yet
-        #    print "NO CARDS PLAYED YET, I DO NOT KNOW WHAT TO DO!"
-        #    return 0
 
         #if winnercard.points:
         for idx, card in enumerate(self.hand):
@@ -251,7 +244,11 @@ class Player:
         return 0
 
     def getchoice(self, cardsplayed=None, briscola=None):
-        """Only non-interactive actions here."""
+        """getchoice(cardsplayed, briscola) -> cardidx
+
+        Each subclassing module needs to implement the user interaction
+        needed to choose a card. Here we just call aiplaycard() if the
+        player is not human."""
 
         if len(self.hand) == 1:
             return 0
