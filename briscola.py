@@ -195,9 +195,6 @@ class Game:
     def resetplayed(self):
         self.cardsplayed = []
 
-    def showplayed(self):
-        pass
-
     def showplayedcard(self):
         pass
     

@@ -20,7 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__revision__ = "20070906"
+"""Pryscola, graphical user interface"""
+
+__revision__ = "20070908"
 
 import os
 import sys
@@ -30,7 +32,7 @@ from pygame.locals import *
 
 import briscola
 
-class Card(briscola.Card):
+class GuiCard(briscola.Card):
     
     def __init__(self, seed, value, theme="default"):
         briscola.Card.__init__(self, seed, value)
@@ -42,8 +44,10 @@ class Card(briscola.Card):
         filename = os.path.join(".", "cards", theme, "back.gif")
         self.backimage = pygame.image.load(filename).convert()
 
-class GuiPlayer(briscola.Player):
+        self.card_rect = self.image.get_rect()
 
+class GuiPlayer(briscola.Player):
+    
     def showname(self, field):
 
         field_rect = field.get_rect()
@@ -70,23 +74,34 @@ class GuiPlayer(briscola.Player):
         field_rect = field.get_rect()
 
         for idx, card in enumerate(self.hand):
-            card = Card(card.seed, card.value)
 
             if self.ishuman:
                 image = card.image
             else:
                 image = card.backimage
 
-            card_rect = image.get_rect()
-
             if self.ishuman:
-                card_rect.y = field_rect.bottom - 110
+                card.card_rect.y = field_rect.bottom - 110
             else:
-                card_rect.y = field_rect.top + 20
+                card.card_rect.y = field_rect.top + 20
                 
-            card_rect.centerx = (field_rect.centerx + idx * 20) - 20
+            card.card_rect.centerx = (field_rect.centerx + idx * 80) - 96
             #card.image = pygame.transform.rotate(card.image, 90)
-            field.blit(image, card_rect)
+            field.blit(image, card.card_rect)
+
+    def getchoice(self, cardsplayed=None, curbriscola=None, event=None):
+        """Interactive implementation of getchoice(). event cointains a
+        MOUSBUTTONDOWN event."""
+        
+        ret = briscola.Player.getchoice(self, cardsplayed, curbriscola)
+        
+        # non interactive choice
+        if ret == 0 or not self.ishuman:
+            return ret
+        
+        for cardidx, card in enumerate(self.hand):
+            if card.card_rect.collidepoint(event.pos):
+                return cardidx
 
 class GuiGame(briscola.Game):
 
@@ -95,19 +110,23 @@ class GuiGame(briscola.Game):
         Set up graphics, build and display the field, put the cards on
         the field (briscola and deck).
         """
-        briscola.Game.__init__(self, players)
-
         pygame.init()
         self.screen = pygame.display.set_mode(size)
+
+        briscola.Game.__init__(self, players)
 
         self.field = self.getfield()
         field_rect = self.field.get_rect()
         
         # put the briscola on the field
-        curbriscola = Card(self.deck.briscola.seed,
-                           self.deck.briscola.value)
+        curbriscola = GuiCard(self.deck.briscola.seed,
+                              self.deck.briscola.value)
+        #self.deck.briscola = curbriscola
+
         curbriscola_rect = curbriscola.image.get_rect()
-        curbriscola_rect.center = field_rect.center
+        curbriscola_rect.centery = field_rect.centery
+        curbriscola_rect.x += 50
+
         curbriscola.image = pygame.transform.rotate(curbriscola.image, 90)
         self.field.blit(curbriscola.image, curbriscola_rect)
         
@@ -119,6 +138,9 @@ class GuiGame(briscola.Game):
         backimage_rect.y -= 10
         self.field.blit(backimage, backimage_rect)
 
+        self.blitscreen()
+
+    def blitscreen(self):
         # blit everything to the screen
         self.screen.blit(self.field, (0, 0))
         pygame.display.flip()
@@ -131,27 +153,114 @@ class GuiGame(briscola.Game):
         field = field.convert()
         field.fill((0, 84, 0))
         return field
+    
+    def givecards(self):
+        briscola.Game.givecards(self)
 
-    def showplayed(self):
-        for idx, card in enumerate(self.cardsplayed):
-            #FIXME
-            card
+        for player in self.players:
+            player.hand = [ GuiCard(card.seed, card.value) for card in
+                player.hand ]
+
+    def showplayedcard(self, idxplayer, idxcard):
+        player = self.players[idxplayer]
+        card = player.hand[idxcard]
+
+        field_rect = self.field.get_rect()
+
+        image = card.image
+        
+        for x in range(20):
+            self.field.blit(self.getfield(), card.card_rect, card.card_rect)
+
+            if player.ishuman:
+                card.card_rect = card.card_rect.move(0, -5)
+            else:
+                card.card_rect = card.card_rect.move(0, 5)
+            
+            self.field.blit(image, card.card_rect)
+            self.blitscreen()
+
+    def removefromfield(self):
+        for card in self.cardsplayed:
+            self.field.blit(self.getfield(), card.card_rect,
+                            card.card_rect)
+        self.blitscreen()
+
+    def showresults(self):
+        briscola.Game.showresults(self)
+        print self.points
 
     def mainloop(self):
         """The main loop. Iterate until the user wants to quit. """
         
         while 1:
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: 
                     sys.exit()
 
-            for idxplayer, player in enumerate(self.players):
+            if not len(self.players[0].hand):
+                break
+
+            self.resetplayed()
+
+            for player in self.players:
+                # show player names and cards
                 player.showname(self.field)
                 player.showhand(self.field)
 
-            self.screen.blit(self.field, (0, 0))
-            pygame.display.flip()
+                self.blitscreen()
+                
+            for idxplayer, player in enumerate(self.players):
+                if player.ishuman:
+                    # wait for card selection
+                    while 1:
+                        event = pygame.event.wait()
 
+                        if event.type == pygame.QUIT: 
+                            sys.exit()
+
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+                            cardidx = player.getchoice(self.cardsplayed,
+                                                       self.deck.briscola,
+                                                       event)
+                            if cardidx is not None:
+                                break
+
+                    self.showplayedcard(idxplayer, cardidx)
+                    self.playcard(idxplayer, cardidx)
+
+                else:
+                    # AI choice
+                    cardidx = player.getchoice(self.cardsplayed,
+                                               self.deck.briscola)
+
+                    self.showplayedcard(idxplayer, cardidx)
+                    self.playcard(idxplayer, cardidx)
+
+                
+            idxwinner = briscola.handwinner(self.cardsplayed, 
+                                            self.deck.briscola, 0, 1)
+
+            pygame.time.delay(1000)
+
+            self.removefromfield()
+
+            for card in self.cardsplayed:
+                self.players[idxwinner].points += card.points
+            
+            pwinner = self.players[idxwinner]
+
+            while (self.players[0] != pwinner):
+                self.players.append(self.players.pop(0))
+
+            for player in self.players:
+                card = self.deck.draw()
+                if card is not None:
+                    card = GuiCard(card.seed, card.value)
+                    player.hand.append(card)
+        
+        self.showresults()
 
 if __name__ == "__main__":
     size = width, height = 640, 480

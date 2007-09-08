@@ -86,12 +86,6 @@ class CliGame(briscola.Game):
     def showplayedcard(self, idxplayer, idxcard):
         print self.players[idxplayer].name, "plays", \
             showcard(self.players[idxplayer].hand[idxcard])
-    
-    def showplayed(self):
-        print "played cards:"
-        for idx, card in enumerate(self.cardsplayed):
-            print self.players[idx].name, showcard(card)
-        print "---"
 
     def showresults(self):
         briscola.Game.showresults(self)
@@ -165,3 +159,4 @@ if __name__ == "__main__":
         game.mainloop()
     except KeyboardInterrupt:
         print "\nExiting"
+        game.showresults()
