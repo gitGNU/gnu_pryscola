@@ -53,8 +53,8 @@ class GuiPlayer(briscola.Player):
         field_rect = field.get_rect()
 
         playername = self.name 
-        if self.team:
-            playername += " (team %s)" % self.team
+        #if self.team:
+        #    playername += " (team %s)" % self.team
 
         myfnt = pygame.font.match_font('Arial')
         font = pygame.font.Font(myfnt, 36)
@@ -145,6 +145,41 @@ class GuiGame(briscola.Game):
         # blit everything to the screen
         self.screen.blit(self.field, (0, 0))
         pygame.display.flip()
+
+    def getplayers(self):
+        """
+        nplayers = -1
+        background = pygame.Surface(self.screen.get_size())
+        background = background.convert()
+        background.fill((0, 0, 0))
+
+        myfnt = pygame.font.match_font('Arial')
+        font = pygame.font.Font(myfnt, 36)
+
+        opts = [ "Two", "Three", "Four", "Five", "Six" ]
+        
+        text_options = [ font.render(opt, 1, (255, 255, 255)) 
+            for opt in opts ]
+        
+        for idx, opt in enumerate(text_options):
+            opt_pos = opt.get_rect()
+            opt_pos.centerx = background.get_rect().centerx
+            opt_pos.y += 30 + idx * 50
+            background.blit(opt, opt_pos)
+        
+        self.screen.blit(background, (0, 0))
+        pygame.display.flip()
+        """
+
+        # FIXME
+        self.players = [ GuiPlayer(name='ema') ]
+        nplayers = 1
+
+        others = self.randomplayernames(nplayers)
+
+        for idx, name in enumerate(others):
+            self.players.append(GuiPlayer(name, ishuman=False,
+                team=idx % 2 and 'a' or 'b'))
 
     def getfield(self):
         """Return a pygame.Surface representing the field."""
@@ -264,10 +299,5 @@ class GuiGame(briscola.Game):
         self.showresults()
 
 if __name__ == "__main__":
-    size = width, height = 640, 480
-
-    players = [ GuiPlayer(name='ema' ), 
-                GuiPlayer(name='subzero', ishuman=False) ]
-
-    game = GuiGame(players, size)
+    game = GuiGame(players=[], size=(640, 480))
     game.mainloop()
