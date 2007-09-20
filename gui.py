@@ -22,7 +22,7 @@
 
 """Pryscola, graphical user interface"""
 
-__revision__ = "20070908"
+__revision__ = "20070920"
 
 import os
 import sys
@@ -31,6 +31,7 @@ import pygame
 from pygame.locals import *
 
 import briscola
+import guimenu
 
 class GuiCard(briscola.Card):
     
@@ -102,90 +103,6 @@ class GuiPlayer(briscola.Player):
         for cardidx, card in enumerate(self.hand):
             if card.card_rect.collidepoint(event.pos):
                 return cardidx
-
-class Menu(object):
-
-    black = 0, 0, 0
-    white = 255, 255, 255
-    red = 255, 0, 0
-    
-    def __init__(self, size, options, caption):
-        pygame.init()
-        self.screen = pygame.display.set_mode(size)
-
-        self.background = self.get_background()
-        self.background_pos = self.background.get_rect()
-
-        myfnt = pygame.font.match_font('Arial')
-        self.font = pygame.font.Font(myfnt, 36)
-        
-        title = self.font.render(caption, 1, self.white)
-        title_pos = title.get_rect()
-        title_pos.centerx = self.background_pos.centerx
-
-        self.background.blit(title, title_pos)
-        
-        self.opts = options
-        self.opts_pos = []
-
-        self.choosen = self.getchoice()
-    
-    def isover(self, cursor_pos):
-        """isover(cursor_pos) -> idx"""
-        for idx, opt_pos in enumerate(self.opts_pos):
-            if opt_pos.collidepoint(cursor_pos):
-                return idx
-    
-    def drawopt(self, idx, color):
-        opt = self.font.render(self.opts[idx], 1, color)
-        opt_pos = opt.get_rect()
-        opt_pos.centerx = self.background_pos.centerx
-        opt_pos.y = 30 + idx * 60
-
-        self.opts_pos.append(opt_pos)
-
-        self.background.blit(self.get_background(), opt_pos, opt_pos)
-        self.background.blit(opt, opt_pos)
-
-        self.screen.blit(self.background, (0, 0))
-        pygame.display.flip()
-    
-    def drawopts(self):
-
-        for idx in range(len(self.opts)):
-            self.drawopt(idx, self.white)
-
-    def get_background(self):
-        background = pygame.Surface(self.screen.get_size())
-        background = background.convert()
-        background.fill(self.black)
-        return background
-    
-    def getchoice(self):
-        """getchoice() -> choice_idx
-        
-        Show a graphical menu and return user choice."""
-
-        self.drawopts()
-
-        while True:
-   
-            for event in pygame.event.get():
-
-                if event.type == pygame.QUIT: 
-                    sys.exit()
-                
-                if event.type in (pygame.MOUSEMOTION, pygame.MOUSEBUTTONDOWN):
-                    idx = self.isover(event.pos)
-
-                    if idx is not None:
-                        if event.type == pygame.MOUSEMOTION:
-                            over = True
-                            self.drawopt(idx, self.red)
-                        else:
-                            return idx
-                    else:
-                        self.drawopts()
 
 class GuiGame(briscola.Game):
 
@@ -359,16 +276,5 @@ class GuiGame(briscola.Game):
         self.showresults()
 
 if __name__ == "__main__":
-    size = 640, 480
-
-#    options = [ "Two", "Three", 
-#                "Four", "Five", 
-#                "Six" ]
-#    menu = Menu(size, options, "NUMBER OF PLAYERS")
-#    print menu.choosen, options[menu.choosen]
-#    
-#    options = [ "Local", "Network" ]
-#    menu = Menu(size, options, "GAME MODE")
-#    print menu.choosen, options[menu.choosen]
     game = GuiGame(players=[], size=size)
     game.mainloop()
