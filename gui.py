@@ -28,10 +28,10 @@ import os
 import sys
 
 import pygame
-from pygame.locals import *
+#from pygame.locals import *
 
 import briscola
-import guimenu
+#import guimenu
 
 class GuiCard(briscola.Card):
     
@@ -178,11 +178,11 @@ class GuiGame(briscola.Game):
         player = self.players[idxplayer]
         card = player.hand[idxcard]
 
-        field_rect = self.field.get_rect()
+        #field_rect = self.field.get_rect()
 
         image = card.image
         
-        for x in range(20):
+        for step in range(20):
             self.field.blit(self.getfield(), card.card_rect, card.card_rect)
 
             if player.ishuman:
@@ -201,6 +201,23 @@ class GuiGame(briscola.Game):
 
     def showresults(self):
         briscola.Game.showresults(self)
+
+        if self.winnerplayer:
+            myfnt = pygame.font.match_font('Arial')
+            font = pygame.font.Font(myfnt, 36)
+
+            text = font.render("%s WINS!" % self.winnerplayer.name, 
+                               1, (10, 10, 10))
+            text_rect = text.get_rect()
+
+            field_rect = self.field.get_rect()
+
+            text_rect.centerx = field_rect.centerx
+            text_rect.centery = field_rect.centery
+
+            self.field.blit(text, text_rect)
+            self.blitscreen()
+            
         print self.points
 
     def mainloop(self):
@@ -259,6 +276,7 @@ class GuiGame(briscola.Game):
 
             self.removefromfield()
 
+            # FIXME: this stuff should be put in briscola.py
             for card in self.cardsplayed:
                 self.players[idxwinner].points += card.points
             
@@ -274,7 +292,13 @@ class GuiGame(briscola.Game):
                     player.hand.append(card)
         
         self.showresults()
+        while 1:
+            event = pygame.event.wait()
+
+            if event.type == pygame.QUIT: 
+                sys.exit()
 
 if __name__ == "__main__":
+    size = (640, 480)
     game = GuiGame(players=[], size=size)
     game.mainloop()
