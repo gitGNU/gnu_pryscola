@@ -175,6 +175,12 @@ class Game:
         self.points = None
         self.winnerplayer, self.winnerteam = None, None
 
+    def getplayer(self, name):
+        """Return a Player object"""
+        for player in self.players:
+            if player.name == name:
+                return player
+
     def getplayers(self):
         """Set self.players"""
         pass
