@@ -205,8 +205,8 @@ class Game:
         pass
     
     def computeresults(self):
-        """Compute final results, setting winnerplayer (or winnerteam)
-        and points."""
+        """Compute final results, setting winnerplayer (or winnerteam and
+        winnerplayers) and points."""
 
         self.points = {}
 
@@ -233,6 +233,8 @@ class Game:
             self.winnerteam = teams[0]
         elif self.points[teams[0]] < self.points[teams[1]]:
             self.winnerteam = teams[1]
+        
+        self.winnerplayers = [ player for player in self.players if player.team == self.winnerteam ]
 
     def showresults(self):
         """Each subclassing module needs to implement the proper way to

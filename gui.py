@@ -171,7 +171,7 @@ class GuiGame(briscola.Game):
 
     def getplayers(self):
         # FIXME
-        self.players = [ GuiPlayer(name='ema', number=0) ]
+        self.players = [ GuiPlayer(name='ema', team='a', number=0) ]
         nplayers = 3
 
         others = self.randomplayernames(nplayers)
@@ -232,12 +232,19 @@ class GuiGame(briscola.Game):
     def showresults(self):
         briscola.Game.showresults(self)
 
-        if self.winnerplayer:
+        if self.winnerplayer or self.winnerteam:
             myfnt = pygame.font.match_font('Arial')
             font = pygame.font.Font(myfnt, 36)
-
-            text = font.render("%s WINS!" % self.winnerplayer.name, 
-                               1, (10, 10, 10))
+            
+            if self.winnerplayer:
+                text = font.render("%s WINS!" % self.winnerplayer.name, 
+                                   1, (10, 10, 10))
+            else:
+                string = "%s! For greater justice!" % ' and '.join(
+                    [ player.name for player in self.winnerplayers ]
+                )
+                text = font.render(string, 1, (10, 10, 10))
+            
             text_rect = text.get_rect()
 
             field_rect = self.field.get_rect()
