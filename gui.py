@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2007 Emanuele Rocca <ema@linux.it>
+# Copyright (C) 2007-2008 Emanuele Rocca <ema@linux.it>
 # Copyright (C) 2007 Davide Pellerano <cycl0psg@gmail.com>
 # Copyright (C) 2007 Alessandro Arcidiacono <spidermacg@gmail.com>
 #
@@ -22,7 +22,7 @@
 
 """Pryscola, graphical user interface"""
 
-__revision__ = "20070920"
+__revision__ = "20080829"
 
 import os
 import sys
@@ -31,26 +31,33 @@ import pygame
 #from pygame.locals import *
 
 import briscola
-#import guimenu
+import guimenu
+
+XRES = 800
+YRES = 600
 
 class GuiCard(briscola.Card):
     
-    def __init__(self, seed, value, theme="default"):
+    def __init__(self, seed, value, theme="default", orientation='vertical'):
         briscola.Card.__init__(self, seed, value)
         filename = os.path.join(".", "cards", theme, 
             "%s_%s.gif" % (value.lower(), seed.lower()))
 
         self.image = pygame.image.load(filename).convert()
+        self.backimage = pygame.image.load(filename).convert()
 
         filename = os.path.join(".", "cards", theme, "back.gif")
         self.backimage = pygame.image.load(filename).convert()
 
+        if orientation == 'horizontal':
+            self.image = pygame.transform.rotate(self.image, 90)
+            self.backimage = pygame.transform.rotate(self.backimage, 90)
+        
         self.card_rect = self.image.get_rect()
 
 class GuiPlayer(briscola.Player):
     
     def showname(self, field):
-
         field_rect = field.get_rect()
 
         playername = self.name 
@@ -62,32 +69,48 @@ class GuiPlayer(briscola.Player):
         text = font.render(playername, 1, (10, 10, 10))
         text_rect = text.get_rect()
 
-        if self.ishuman:
-            text_rect.y = field_rect.bottom - 110    
-        else:
-            text_rect.y = field_rect.top + 20
+        if self.number == 0:
+            text_rect.bottom = field_rect.bottom - 5
+            text_rect.right = field_rect.centerx - 150
 
-        text_rect.x = 20 # field.get_width() / 2
+        elif self.number == 1:
+            text_rect.left = field_rect.left + 5
+            text_rect.y = field_rect.centery + 110
+
+        elif self.number == 2:
+            text_rect.top = field_rect.top + 5
+            text_rect.right = field_rect.centerx - 150
+
+        elif self.number == 3:
+            text_rect.right = field_rect.right - 5
+            text_rect.y = field_rect.centery + 110
+
         field.blit(text, text_rect)
 
     def showhand(self, field):
-
         field_rect = field.get_rect()
 
         for idx, card in enumerate(self.hand):
 
-            if self.ishuman:
+            if self.number == 0:
                 image = card.image
+                card.card_rect.centerx = (field_rect.centerx + idx * 80) - 96
+                card.card_rect.bottom = field_rect.bottom - 5
             else:
                 image = card.backimage
 
-            if self.ishuman:
-                card.card_rect.y = field_rect.bottom - 110
-            else:
-                card.card_rect.y = field_rect.top + 20
+            if self.number == 1:
+                card.card_rect.x = field_rect.left + 10
+                card.card_rect.centery = (field_rect.centery + idx * 80) - 90
+
+            elif self.number == 2:
+                card.card_rect.centerx = (field_rect.centerx + idx * 80) - 96
+                card.card_rect.top = field_rect.top + 5
+
+            elif self.number == 3:
+                card.card_rect.x = field_rect.right - 100
+                card.card_rect.centery = (field_rect.centery + idx * 80) - 90
                 
-            card.card_rect.centerx = (field_rect.centerx + idx * 80) - 96
-            #card.image = pygame.transform.rotate(card.image, 90)
             field.blit(image, card.card_rect)
 
     def getchoice(self, cardsplayed=None, curbriscola=None, event=None):
@@ -122,19 +145,18 @@ class GuiGame(briscola.Game):
         
         # put the briscola on the field
         self.deck.briscola = GuiCard(self.deck.briscola.seed,
-                                     self.deck.briscola.value)
+                                     self.deck.briscola.value,
+                                     orientation='horizontal')
 
         self.deck.briscola.card_rect.centery = field_rect.centery
-        self.deck.briscola.card_rect.x += 50
+        self.deck.briscola.card_rect.centerx = field_rect.centerx
 
-        self.deck.briscola.image = pygame.transform.rotate(
-            self.deck.briscola.image, 90
-        )
         self.field.blit(self.deck.briscola.image, 
                         self.deck.briscola.card_rect)
         
         # put the deck over the curbriscola
         backimage = self.deck.briscola.backimage
+        backimage = pygame.transform.rotate(backimage, 90)
         backimage_rect = self.deck.briscola.card_rect
         backimage_rect.x -= 15
         backimage_rect.y -= 10
@@ -149,48 +171,56 @@ class GuiGame(briscola.Game):
 
     def getplayers(self):
         # FIXME
-        self.players = [ GuiPlayer(name='ema') ]
-        nplayers = 1
+        self.players = [ GuiPlayer(name='ema', number=0) ]
+        nplayers = 3
 
         others = self.randomplayernames(nplayers)
 
         for idx, name in enumerate(others):
             self.players.append(GuiPlayer(name, ishuman=False,
-                team=idx % 2 and 'a' or 'b'))
+                team=idx % 2 and 'a' or 'b', number=idx+1))
 
     def getfield(self):
         """Return a pygame.Surface representing the field."""
-
         # field
         field = pygame.Surface(self.screen.get_size())
         field = field.convert()
         field.fill((0, 84, 0))
         return field
-    
+   
     def givecards(self):
         briscola.Game.givecards(self)
 
         for player in self.players:
-            player.hand = [ GuiCard(card.seed, card.value) for card in
-                player.hand ]
-
+            hand = player.hand
+            player.hand = []
+            
+            for card in hand:
+                if player.number in (1, 3):
+                    card = GuiCard(card.seed, card.value, orientation='horizontal')
+                else:
+                    card = GuiCard(card.seed, card.value, orientation='vertical')
+                player.hand.append(card)
+    
     def showplayedcard(self, idxplayer, idxcard):
         player = self.players[idxplayer]
         card = player.hand[idxcard]
 
         #field_rect = self.field.get_rect()
-
-        image = card.image
         
         for step in range(20):
             self.field.blit(self.getfield(), card.card_rect, card.card_rect)
 
-            if player.ishuman:
+            if player.number == 0:
                 card.card_rect = card.card_rect.move(0, -5)
-            else:
+            elif player.number == 2:
                 card.card_rect = card.card_rect.move(0, 5)
+            elif player.number == 1:
+                card.card_rect = card.card_rect.move(5, 0)
+            elif player.number == 3:
+                card.card_rect = card.card_rect.move(-5, 0)
             
-            self.field.blit(image, card.card_rect)
+            self.field.blit(card.image, card.card_rect)
             self.blitscreen()
 
     def removefromfield(self):
@@ -288,7 +318,10 @@ class GuiGame(briscola.Game):
             for player in self.players:
                 card = self.deck.draw()
                 if card is not None:
-                    card = GuiCard(card.seed, card.value)
+                    if player.number in (1, 3):
+                        card = GuiCard(card.seed, card.value, orientation='horizontal')
+                    else:
+                        card = GuiCard(card.seed, card.value, orientation='vertical')
                     player.hand.append(card)
         
         self.showresults()
@@ -299,6 +332,8 @@ class GuiGame(briscola.Game):
                 sys.exit()
 
 if __name__ == "__main__":
-    size = (640, 480)
-    game = GuiGame(players=[], size=size)
+#    menu = Menu(size=(XRES, YRES), options=[ "2", "4" ], 
+#                caption="Number of players")
+    
+    game = GuiGame(players=[], size=(XRES, YRES))
     game.mainloop()

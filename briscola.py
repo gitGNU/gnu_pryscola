@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2007 Emanuele Rocca <ema@linux.it>
+# Copyright (C) 2007-2008 Emanuele Rocca <ema@linux.it>
 # Copyright (C) 2007 Davide Pellerano <cycl0psg@gmail.com>
 # Copyright (C) 2007 Alessandro Arcidiacono <spidermacg@gmail.com>
 #
@@ -23,7 +23,7 @@
 """Basic features of briscola, an Italian trick-taking card game. 
 See http://en.wikipedia.org/wiki/Briscola."""
 
-__revision__ = "20070908"
+__revision__ = "20080829"
 
 from random import Random, sample
 
@@ -252,12 +252,13 @@ class InvalidNumberOfPlayers(Exception):
 
 class Player:
     
-    def __init__(self, name, ishuman=True, team=None):
+    def __init__(self, name, ishuman=True, team=None, number=0):
         self.hand = []
         self.points = 0
         self.name = name
         self.ishuman = ishuman
         self.team = team
+        self.number = number
 
     def __cmp__(self, player2):
         return cmp(self.points, player2.points)

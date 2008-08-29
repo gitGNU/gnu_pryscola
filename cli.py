@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2007 Emanuele Rocca <ema@linux.it>
+# Copyright (C) 2007-2008 Emanuele Rocca <ema@linux.it>
 # Copyright (C) 2007 Davide Pellerano <cycl0psg@gmail.com>
 # Copyright (C) 2007 Alessandro Arcidiacono <spidermacg@gmail.com>
 #
@@ -22,7 +22,7 @@
 
 """Pryscola, command line interface"""
 
-__revision__ = "20070908"
+__revision__ = "20080829"
 
 import sys
 import briscola
@@ -75,13 +75,13 @@ class CliGame(briscola.Game):
         sys.stdout.write("> ")
         username = sys.stdin.readline().replace('\n', '')
 
-        self.players = [ CliPlayer(name=username, team='a') ]
+        self.players = [ CliPlayer(name=username, team='a', number=0) ]
         
         others = self.randomplayernames(nplayers)
 
         for idx, name in enumerate(others):
             self.players.append(CliPlayer(name, ishuman=False,
-                team=idx % 2 and 'a' or 'b'))
+                team=idx % 2 and 'a' or 'b', number=idx+1))
 
     def showplayedcard(self, idxplayer, idxcard):
         print self.players[idxplayer].name, "plays", \
