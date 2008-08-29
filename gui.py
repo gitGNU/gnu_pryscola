@@ -256,7 +256,7 @@ class GuiGame(briscola.Game):
         while 1:
 
             for event in pygame.event.get():
-                if event.type == pygame.QUIT: 
+                if event.type == pygame.QUIT:
                     sys.exit()
 
             if not len(self.players[0].hand):
@@ -277,7 +277,7 @@ class GuiGame(briscola.Game):
                     while 1:
                         event = pygame.event.wait()
 
-                        if event.type == pygame.QUIT: 
+                        if event.type == pygame.QUIT:
                             sys.exit()
 
                         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -302,7 +302,14 @@ class GuiGame(briscola.Game):
             idxwinner = briscola.handwinner(self.cardsplayed, 
                                             self.deck.briscola, 0, 1)
 
-            pygame.time.delay(1000)
+            while 1:
+                event = pygame.event.wait()
+
+                if event.type == pygame.QUIT:
+                    sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    break
 
             self.removefromfield()
 
