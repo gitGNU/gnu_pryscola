@@ -33,10 +33,7 @@ class CardCheck(unittest.TestCase):
 
     def setUp(self):
         """Here we set the 'cards' list."""
-        self.cards = []
-        for seed in briscola.SEEDS:
-            for value in briscola.CARDSNAMES:
-                self.cards.append(briscola.Card(seed, value))
+        self.cards = briscola.Deck().getcardlist()
 
     def testValidCardSeed(self):
         """seed should belong to briscola.SEEDS"""
