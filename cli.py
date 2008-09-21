@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2007-2008 Emanuele Rocca <ema@linux.it>
+# Copyright (C) 2007 2008 Emanuele Rocca <ema@linux.it>
 # Copyright (C) 2007 Davide Pellerano <cycl0psg@gmail.com>
 # Copyright (C) 2007 Alessandro Arcidiacono <spidermacg@gmail.com>
 #

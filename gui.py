@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2007-2008 Emanuele Rocca <ema@linux.it>
+# Copyright (C) 2007 2008 Emanuele Rocca <ema@linux.it>
 # Copyright (C) 2007 Davide Pellerano <cycl0psg@gmail.com>
 # Copyright (C) 2007 Alessandro Arcidiacono <spidermacg@gmail.com>
 #
@@ -261,7 +261,6 @@ class GuiGame(briscola.Game):
         """The main loop. Iterate until the user wants to quit. """
         
         while 1:
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
@@ -340,9 +339,7 @@ class GuiGame(briscola.Game):
         
         self.showresults()
         while 1:
-            event = pygame.event.wait()
-
-            if event.type == pygame.QUIT: 
+            if pygame.event.wait().type == pygame.QUIT: 
                 sys.exit()
 
 if __name__ == "__main__":

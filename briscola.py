@@ -57,13 +57,17 @@ def handwinner(cardlist, briscola, first, second):
     return handwinner(cardlist, briscola, second, second+1)
 
 class Card:
+    """Represents card objects and methods to compare two cards."""
     
     def __init__(self, seed, value):
+        """Create a new card instance with the given seed and value."""
         self.seed = seed
         self.value = value   
         self.points = CARDSPOINTS.get(value, 0)
     
     def __cmp__(self, othercard):
+        """__cmp__(othercard) -> int
+        Compare the current card with 'othercard'."""
         return cmp(self.points, othercard.points)
 
     def isbriscola(self, briscola):
@@ -88,8 +92,12 @@ class Card:
         return True
 
 class Deck:
+    """Represents a deck of cards."""
 
     def __init__(self):
+        """Set up a new deck. The 'cards' list holds a list of objects whose
+        type is Card. After instantiating the whole deck, the list is shuffled
+        with the shuffle method of random.Random."""
         self.briscola = None
         # will be set only if nplayers == 3
         self.removedcard = None
@@ -107,14 +115,20 @@ class Deck:
         return "\n".join([ str(card) for card in self.cards ])
 
     def setbriscola(self):
+        """Pop the first card from the deck and set the 'briscola'
+        attribute. Then, reinsert the card into the deck."""
         card = self.cards.pop()
         self.briscola = card
         self.cards.insert(0, card)
     
     def nomorecards(self):
+        """nomorecards() -> boolean
+        Returns True if there's no card left."""
         return len(self.cards) == 0
 
     def draw(self):
+        """draw() -> Card
+        Pop a card from the deck."""
         try:
             return self.cards.pop()
         except IndexError:
@@ -140,11 +154,14 @@ class MazzoAcinque(Deck):
         pass
 
 class Game:
+    """Represents a game instance. Basically, a game is made by a list of
+    players and a deck of cards."""
     
     nonhumans = ( 'Kano', 'Sub-Zero', 'Scorpion', 'Sonya' )
 
     def __init__(self, players=None):
-        """If players is None, call getplayers()."""
+        """Create a new game, to be played by the given players. If players is
+        None, call getplayers()."""
         
         if players:
             self.players = players
@@ -173,40 +190,38 @@ class Game:
         self.cardsplayed = []
 
         self.points = None
-        self.winnerplayer, self.winnerteam = None, None
+        self.winnerplayer = None
+        self.winnerplayers, self.winnerteam = None, None
 
     def getplayer(self, name):
-        """Return a Player object"""
+        """getplayer(name) -> Player"""
         for player in self.players:
             if player.name == name:
                 return player
 
-    def getplayers(self):
-        """Set self.players"""
-        pass
-
     def randomplayernames(self, num):
+        """randomplayernames(num) -> list
+        Returns a list of 'num' random player names."""
         return sample(self.nonhumans, num)
     
     def givecards(self):
-
+        """Set player.hand for each Player. player.hand is a list of 'ncards'
+        cards."""
         for player in self.players:
             player.hand = [ self.deck.cards.pop() 
                 for idx in range(0, self.ncards) ]
     
     def playcard(self, idxplayer, idxcard):
-        """Add card identified by idxcard to cardsplayed."""
+        """Add card identified by 'idxcard' to 'cardsplayed'."""
         self.cardsplayed.append(self.players[idxplayer].hand.pop(idxcard))
     
     def resetplayed(self):
+        """Empty 'cardsplayed'."""
         self.cardsplayed = []
 
-    def showplayedcard(self):
-        pass
-    
     def computeresults(self):
-        """Compute final results, setting winnerplayer (or winnerteam and
-        winnerplayers) and points."""
+        """Compute final results, setting 'winnerplayer' (or 'winnerteam' and
+        'winnerplayers') and 'points'."""
 
         self.points = {}
 
@@ -239,15 +254,35 @@ class Game:
                 if player.team == self.winnerteam 
         ]
 
+    def getplayers(self):
+        """Get player names and set 'players' list. This function has to be
+        implemented by the subclassing user interface, here we set 'players' to
+        a random list of non-human players."""
+        human = False
+
+        for idx, name in enumerate(self.randomplayernames(4)):
+            team = idx % 2 and 'a' or 'b'
+            number = idx + 1
+
+            self.players.append(Player(name, human, team, number))
+
+    def showplayedcard(self):
+        """Show played card. This function has to be implemented by the
+        subclassing user interface."""
+        pass
+
+    def mainloop(self):
+        """Main loop. This function has to be implemented by the subclassing
+        user interface."""
+        pass
+    
     def showresults(self):
         """Each subclassing module needs to implement the proper way to
         present final results. Here we just call computeresults()."""
         self.computeresults()
-
-    def mainloop(self):
-        pass
                    
 class InvalidNumberOfPlayers(Exception):
+    """Exception to be thrown when the number of players is not valid."""
     def __init__(self, nplayers=0):
         Exception.__init__(self)
         self.nplayers = nplayers
@@ -256,6 +291,8 @@ class InvalidNumberOfPlayers(Exception):
         return "Invalid number of players: " + self.nplayers
 
 class Player:
+    """Represents a player. A player is distinguished by his hand (a list of
+    Card objects), his points, his name and is team, where appropriate."""
     
     def __init__(self, name, ishuman=True, team=None, number=0):
         self.hand = []
@@ -266,13 +303,8 @@ class Player:
         self.number = number
 
     def __cmp__(self, player2):
+        """Compare the points of player and 'player2'."""
         return cmp(self.points, player2.points)
-    
-    def showname(self):
-        pass
-    
-    def showhand(self):
-        pass
     
     def aiplaycard(self, cardsplayed, briscola):
         """aiplaycard(cardsplayed, briscola) -> cardidx
@@ -310,3 +342,13 @@ class Player:
             return self.aiplaycard(cardsplayed, briscola)
 
         # each heir class need to provide their implementation
+    
+    def showname(self):
+        """Show player name. This function has to be implemented by the
+        subclassing user interface."""
+        pass
+    
+    def showhand(self):
+        """Show player hand. This function has to be implemented by the
+        subclassing user interface."""
+        pass
