@@ -32,8 +32,9 @@ import briscola
 class CardCheck(unittest.TestCase):
 
     def setUp(self):
-        """Here we set the 'cards' list."""
+        """Here we set the 'cards' list and a 'curbriscola'."""
         self.cards = briscola.Deck().getcardlist()
+        self.curbriscola = briscola.Card('CUORI', 'TRE')
 
     def testValidCardSeed(self):
         """seed should belong to briscola.SEEDS"""
@@ -54,13 +55,58 @@ class CardCheck(unittest.TestCase):
             self.failUnless(card.points in valid_points)
 
     def testCardComparison(self):
-        pass
+        """card comparison should compare card.points"""
+        card1 = briscola.Card('CUORI', 'DUE')
+        card2 = briscola.Card('CUORI', 'ASSO')
+        self.failUnless(card1 < card2)
+
+        card1 = briscola.Card('QUADRI', 'ASSO')
+        card2 = briscola.Card('FIORI', 'ASSO')
+        self.assertEqual(card1, card2)
+
+        card1 = briscola.Card('PICCHE', 'DONNA')
+        card2 = briscola.Card('CUORI', 'JACK')
+        self.failUnless(card1 > card2)
     
     def testCardIsBriscola(self):
-        pass
+        """isbriscola() should return True if briscola.seed equals card.seed"""
+        card = briscola.Card('CUORI', 'ASSO')
+        self.failUnless(card.isbriscola(self.curbriscola))
+
+        card = briscola.Card('QUADRI', 'ASSO')
+        self.failIf(card.isbriscola(self.curbriscola))
 
     def testCardBeatsOtherCard(self):
-        pass
+        """beats() should follow Briscola's rules"""
+        # card 1 beats card 2
+        card1 = briscola.Card('PICCHE', 'TRE')
+        card2 = briscola.Card('PICCHE', 'CINQUE')
+        self.failUnless(card1.beats(card2, self.curbriscola))
+
+        # card 2 beats card 1
+        card1 = briscola.Card('FIORI', 'DUE')
+        card2 = briscola.Card('FIORI', 'ASSO')
+        self.failIf(card1.beats(card2, self.curbriscola))
+
+        # card 2 is briscola
+        card1 = briscola.Card('QUADRI', 'ASSO')
+        card2 = briscola.Card('CUORI', 'DUE')
+        self.failIf(card1.beats(card2, self.curbriscola))
+
+        # if neither the first nor the second card is briscola, and their seeds
+        # differ, the first one wins
+        card1 = briscola.Card('QUADRI', 'DUE')
+        card2 = briscola.Card('PICCHE', 'ASSO')
+        self.failUnless(card1.beats(card2, self.curbriscola))
+
+class DeckCheck(unittest.TestCase):
+    pass
+
+class GameCheck(unittest.TestCase):
+    pass
+
+class PlayerCheck(unittest.TestCase):
+    pass
 
 if __name__ == "__main__":
     unittest.main()
