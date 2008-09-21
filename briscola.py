@@ -102,10 +102,7 @@ class Deck:
         # will be set only if nplayers == 3
         self.removedcard = None
 
-        self.cards = []
-        for seed in SEEDS:
-            for value in CARDSNAMES:
-                self.cards.append(Card(seed, value))
+        self.cards = self.getcardlist()
 
         # shuffle cards
         rand = Random()
@@ -113,6 +110,16 @@ class Deck:
     
     def __str__(self):
         return "\n".join([ str(card) for card in self.cards ])
+
+    def getcardlist(self):
+        """getcardlist() -> list
+        Build the list of all cards."""
+
+        cards = []
+        for seed in SEEDS:
+            for value in CARDSNAMES:
+                cards.append(Card(seed, value))
+        return cards
 
     def setbriscola(self):
         """Pop the first card from the deck and set the 'briscola'
