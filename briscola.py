@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2007-2008 Emanuele Rocca <ema@linux.it>
+# Copyright (C) 2007 2008 Emanuele Rocca <ema@linux.it>
 # Copyright (C) 2007 Davide Pellerano <cycl0psg@gmail.com>
 # Copyright (C) 2007 Alessandro Arcidiacono <spidermacg@gmail.com>
 #
@@ -23,15 +23,15 @@
 """Basic features of briscola, an Italian trick-taking card game. 
 See http://en.wikipedia.org/wiki/Briscola."""
 
-__revision__ = "20080829"
+__revision__ = "20080921"
 
 from random import Random, sample
 
-seeds = ( 'CUORI', 'QUADRI', 'PICCHE', 'FIORI' )
-cardsnames = [ 'DUE', 'QUATTRO', 'CINQUE', 'SEI', 'SETTE', 
+SEEDS = ( 'CUORI', 'QUADRI', 'PICCHE', 'FIORI' )
+CARDSNAMES = [ 'DUE', 'QUATTRO', 'CINQUE', 'SEI', 'SETTE', 
                'JACK', 'DONNA', 'RE', 'TRE', 'ASSO' ]
 
-cardspoints = { 'ASSO': 11, 'TRE': 10, 'RE': 4, 'DONNA': 3, 'JACK': 2 }        
+CARDSPOINTS = { 'ASSO': 11, 'TRE': 10, 'RE': 4, 'DONNA': 3, 'JACK': 2 }        
 
 def handwinner(cardlist, briscola, first, second):
     """handwinner(cardlist, briscola, first, second) -> winner_idx
@@ -61,7 +61,7 @@ class Card:
     def __init__(self, seed, value):
         self.seed = seed
         self.value = value   
-        self.points = cardspoints.get(value, 0)
+        self.points = CARDSPOINTS.get(value, 0)
     
     def __cmp__(self, othercard):
         return cmp(self.points, othercard.points)
@@ -82,8 +82,8 @@ class Card:
             return False
         
         if self.seed == othercard.seed:
-            return cardsnames.index(self.value) > \
-                cardsnames.index(othercard.value)
+            return CARDSNAMES.index(self.value) > \
+                CARDSNAMES.index(othercard.value)
 
         return True
 
@@ -95,8 +95,8 @@ class Deck:
         self.removedcard = None
 
         self.cards = []
-        for seed in seeds:
-            for value in cardsnames:
+        for seed in SEEDS:
+            for value in CARDSNAMES:
                 self.cards.append(Card(seed, value))
 
         # shuffle cards
@@ -163,7 +163,7 @@ class Game:
             if nplayers == 3:
                 self.deck.removetwo()
         else:
-            # FIXME: to implement
+            # XXX: to implement
             self.deck = MazzoAcinque()
             self.ncards = 8
 
@@ -234,7 +234,10 @@ class Game:
         elif self.points[teams[0]] < self.points[teams[1]]:
             self.winnerteam = teams[1]
         
-        self.winnerplayers = [ player for player in self.players if player.team == self.winnerteam ]
+        self.winnerplayers = [ 
+            player for player in self.players 
+                if player.team == self.winnerteam 
+        ]
 
     def showresults(self):
         """Each subclassing module needs to implement the proper way to
